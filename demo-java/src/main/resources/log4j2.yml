@@ -1,0 +1,158 @@
+Configuration:
+  status: info #LOG4J2自身的日志打印级别
+  monitorInterval: 0
+  Properties: # 定义全局变量 “sys:”表示：如果VM参数中没指定这个变量值，则使用本文件中定义的缺省全局变量值
+    Property:
+      - name: log.level.root
+        value: info
+      - name: log.level.console
+        value: trace
+      - name: log.patten
+        value: "%d{yyyy-MM-dd HH:mm:ss.SSS}||%p||%t||%l||$%m%n"
+      - name: log.metric.patten
+        value: "%d{yyyy-MM-dd HH:mm:ss.SSS}||$%m%n"
+      - name: log.path
+        value: ${sys:logpath}
+      - name: app.name
+        value: ${sys:appname}
+      - name: project.name
+        value: PaasMainApp
+
+  Appenders:
+    Console: #控制台
+      name: CONSOLE
+      target: SYSTEM_OUT
+      ThresholdFilter: # @see https://logging.apache.org/log4j/2.x/manual/filters.html
+        level: ${log.level.console}
+        onMatch: ACCEPT
+        onMismatch: DENY
+      PatternLayout:
+        pattern: ${log.patten}
+        charset: "UTF-8"
+
+    RollingFile: # 文件 超过10MB归档
+      - name: "ALL_ROLLING_FILE" # 所有日志
+        ignoreExceptions: false
+        fileName: "${log.path}/${project.name}_all.log"
+        filePattern: "${log.path}/${project.name}_all.%d{yyyy-MM-dd}.%i.log"
+        BufferedIO: true
+        bufferSize: 8192 # default is 8192 bytes
+        PatternLayout:
+          pattern: ${log.patten}
+          charset: "UTF-8"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: "10 MB"  # 归档日志大小
+        DefaultRolloverStrategy:
+          Delete: # 自动删除日志设置
+            basePath: ${log.path}   # 要删除日志的路径
+            maxDepth: 1 # 深度
+            IfFileName:
+              glob: "*_all*.log"
+              IfLastModified:
+                age: 14d # 文件的保留天数
+
+      - name: "ERROR_ROLLING_FILE" # 异常日志
+        ignoreExceptions: false
+        fileName: "${log.path}/${project.name}_error.log"
+        filePattern: "${log.path}/${project.name}_error.%d{yyyy-MM-dd}.%i.log"
+        BufferedIO: true
+        bufferSize: 8192 # default is 8192 bytes
+        ThresholdFilter:
+          level: ERROR
+          onMatch: ACCEPT
+          onMismatch: DENY
+        PatternLayout:
+          pattern: ${log.patten}
+          charset: "UTF-8"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: "10 MB" # 归档日志大小
+        DefaultRolloverStrategy:
+          Delete: # 自动删除日志设置
+            basePath: ${log.path} # 要删除日志的路径
+            maxDepth: 1 # 深度
+            IfFileName:
+              glob: "*_error*.log"
+              IfLastModified:
+                age: 14d # 文件的保留天数
+
+      - name: "MID_ROLLING_FILE" # mid 日志
+        ignoreExceptions: false
+        fileName: "${log.path}/${project.name}_mid.log"
+        filePattern: "${log.path}/${project.name}_mid.%d{yyyy-MM-dd}.%i.log"
+        BufferedIO: true
+        bufferSize: 8192 # default is 8192 bytes
+        PatternLayout:
+          pattern: ${log.patten}
+          charset: "UTF-8"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: "10 MB"  # 归档日志大小
+        DefaultRolloverStrategy:
+          Delete: # 自动删除日志设置
+            basePath: ${log.path} # 要删除日志的路径
+            maxDepth: 1 # 深度
+            IfFileName:
+              glob: "*_mid*.log"
+              IfLastModified:
+                age: 14d # 文件的保留天数
+
+      - name: "METRIC_ROLLING_FILE" # 指标日志
+        ignoreExceptions: false
+        fileName: "${log.path}/${project.name}_metric.log"
+        filePattern: "${log.path}/${project.name}_metric.%d{yyyy-MM-dd}.%i.log"
+        BufferedIO: true
+        bufferSize: 8192 # default is 8192 bytes
+        PatternLayout:
+          pattern: ${log.metric.patten}
+          charset: "UTF-8"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: "10 MB"  # 归档日志大小
+        DefaultRolloverStrategy:
+          Delete: # 自动删除日志设置
+            basePath: ${log.path} # 要删除日志的路径
+            maxDepth: 1 # 深度
+            IfFileName:
+              glob: "*_metric*.log"
+              IfLastModified:
+                age: 14d # 文件的保留天数
+
+  Loggers:
+    Root:
+      includeLocation: true
+      level: ${log.level.root} # 日志等级
+      AppenderRef: # 引入appender
+        - ref: CONSOLE # 控制台日志
+        - ref: ALL_ROLLING_FILE # 全量日志
+        - ref: ERROR_ROLLING_FILE # error日志
+
+    Logger:
+      - name: org.hibernate.validator.internal.util
+        includeLocation: false
+        additivity: false
+        level: INFO
+        AppenderRef:
+          - ref: MID_ROLLING_FILE
+      - name: org.apache.zookeeper
+        includeLocation: false
+        additivity: false
+        level: INFO
+        AppenderRef:
+          - ref: MID_ROLLING_FILE
+      - name: metrics
+        includeLocation: false
+        additivity: false
+        level: ${log.level.root}
+        AppenderRef:
+          - ref: METRIC_ROLLING_FILE
+      - name: org.hibernate
+        includeLocation: false
+        level: INFO
+      - name: org.hibernate.type.descriptor.sql.BasicBinder
+        includeLocation: false
+        level: TRACE
+      - name: org.hibernate.type.descriptor.sql.BasicExtractor
+        includeLocation: false
+        level: TRACE
