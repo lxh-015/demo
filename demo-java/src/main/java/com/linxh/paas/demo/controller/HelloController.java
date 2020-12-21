@@ -1,5 +1,6 @@
 package com.linxh.paas.demo.controller;
 
+import com.linxh.paas.demo.utils.InetAddressUtils;
 import com.linxh.paas.demo.utils.RequestUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -71,6 +72,7 @@ public class HelloController {
         Map<String, Object> map = new HashMap<>(2);
         map.put("first", START);
         map.put("session", request.getSession().getId());
+        map.put("host", InetAddressUtils.getHostName());
         return map;
     }
 }
