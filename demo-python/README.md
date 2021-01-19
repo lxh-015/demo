@@ -1,2 +1,2 @@
-# demo
-各种示例
+# demo-python
+python 示例
