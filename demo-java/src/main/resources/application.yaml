@@ -1,2 +1,14 @@
 server:
   port: 8080
+
+
+
+# 开启健康检查、指标、info信息、接口信息
+management:
+  endpoints:
+    web:
+      exposure:
+        include: metrics, health, info, mappings, loggers
+  endpoint:
+    health:
+      show-details: always
