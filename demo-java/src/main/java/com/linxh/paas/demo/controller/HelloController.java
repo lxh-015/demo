@@ -1,5 +1,7 @@
 package com.linxh.paas.demo.controller;
 
+import com.linxh.paas.demo.config.http.HeaderInterceptor;
+import com.linxh.paas.demo.config.http.TraceInterceptor;
 import com.linxh.paas.demo.utils.InetAddressUtils;
 import com.linxh.paas.demo.utils.RequestUtils;
 import io.swagger.annotations.Api;
@@ -10,9 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.Inet4Address;
@@ -29,6 +35,11 @@ import java.util.Map;
 @Api(tags = "web接口")
 @RestController
 public class HelloController {
+
+    @Autowired
+    private TraceInterceptor traceInterceptor;
+    @Autowired
+    private HeaderInterceptor headerInterceptor;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloController.class);
     /**
@@ -74,5 +85,18 @@ public class HelloController {
         map.put("session", request.getSession().getId());
         map.put("host", InetAddressUtils.getHostName());
         return map;
+    }
+
+    @ApiOperation(value = "RestTemplate 测试")
+    @GetMapping("/rest")
+    public String rest() {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<String> entity = new HttpEntity<>(null);
+        String port = environment.getProperty("local.server.port");
+        String url = "http://localhost:" + port + "/session";
+        restTemplate.getInterceptors().add(headerInterceptor);
+        restTemplate.getInterceptors().add(traceInterceptor);
+        ResponseEntity<String> exchange = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        return exchange.getBody();
     }
 }
