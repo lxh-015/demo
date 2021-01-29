@@ -8,7 +8,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: metrics, health, info, mappings, loggers
+        include: metrics, health, info, mappings, loggers, httptrace
   endpoint:
     health:
       show-details: always
