@@ -2,6 +2,7 @@ package com.linxh.paas.demo.controller;
 
 import com.linxh.paas.demo.config.http.HeaderInterceptor;
 import com.linxh.paas.demo.config.http.TraceInterceptor;
+import com.linxh.paas.demo.model.dto.HelloDTO;
 import com.linxh.paas.demo.utils.InetAddressUtils;
 import com.linxh.paas.demo.utils.RequestUtils;
 import io.swagger.annotations.Api;
@@ -17,6 +18,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -50,32 +54,39 @@ public class HelloController {
     @Autowired
     private Environment environment;
 
-    @ApiOperation(value = "首页")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "名称，如果携带会返回"),
-    })
-    @GetMapping("/")
-    public String get(HttpServletRequest request, String name) throws UnknownHostException {
-
-        String ipAddress = RequestUtils.getIpAddress(request);
-        String dataStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.sss").format(new Date());
-
-        LOGGER.trace("[{}]请求时间:{}, 请求IP:{}", "trace", dataStr, ipAddress);
-        LOGGER.debug("[{}]请求时间:{}, 请求IP:{}", "debug", dataStr, ipAddress);
-        LOGGER.info("[{}]请求时间:{}, 请求IP:{}", "info", dataStr, ipAddress);
-        LOGGER.warn("[{}]请求时间:{}, 请求IP:{}", "warn", dataStr, ipAddress);
-        LOGGER.error("[{}]请求时间:{}, 请求IP:{}", "error", dataStr, ipAddress);
-
-        String ip = Inet4Address.getLocalHost().getHostAddress();
-        String port = environment.getProperty("local.server.port");
-
-        StringBuilder sb = new StringBuilder(ip);
-        sb.append(":").append(port);
-        if (StringUtils.isEmpty(name)) {
-            return sb.toString();
-        }
-        return sb.append(" ").append(name).toString();
+    @ApiOperation("保存")
+    @GetMapping("/save")
+    public String post(HttpServletRequest request, HelloDTO helloDTO) throws UnknownHostException {
+        return "成功";
     }
+
+    // @ApiOperation(value = "首页")
+    // @ApiImplicitParams({
+    //         @ApiImplicitParam(name = "name", value = "名称，如果携带会返回"),
+    // })
+    // @GetMapping("/")
+    // public String get(HttpServletRequest request, String name) throws UnknownHostException {
+    //
+    //     String ipAddress = RequestUtils.getIpAddress(request);
+    //     String dataStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.sss").format(new Date());
+    //
+    //     LOGGER.trace("[{}]请求时间:{}, 请求IP:{}", "trace", dataStr, ipAddress);
+    //     LOGGER.debug("[{}]请求时间:{}, 请求IP:{}", "debug", dataStr, ipAddress);
+    //     LOGGER.info("[{}]请求时间:{}, 请求IP:{}", "info", dataStr, ipAddress);
+    //     LOGGER.warn("[{}]请求时间:{}, 请求IP:{}", "warn", dataStr, ipAddress);
+    //     LOGGER.error("[{}]请求时间:{}, 请求IP:{}", "error", dataStr, ipAddress);
+    //
+    //     String ip = Inet4Address.getLocalHost().getHostAddress();
+    //     String port = environment.getProperty("local.server.port");
+    //
+    //     StringBuilder sb = new StringBuilder(ip);
+    //     sb.append(":").append(port);
+    //     if (StringUtils.isEmpty(name)) {
+    //         return sb.toString();
+    //     }
+    //     return sb.append(" ").append(name).toString();
+    // }
+
 
     @ApiOperation(value = "session 会话保持")
     @GetMapping("/session")
